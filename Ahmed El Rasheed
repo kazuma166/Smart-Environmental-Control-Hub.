@@ -1,0 +1,46 @@
+/* --- VARIABLES & PROTOTYPES --- */
+void Display_SevenSegment(uint8_t number);
+
+// Seven Segment Lookup Table (Common Cathode)
+const uint8_t segment_map[10] = {
+    0x3F, // 0
+    0x06, // 1
+    0x5B, // 2
+    0x4F, // 3
+    0x66, // 4
+    0x6D, // 5
+    0x7D, // 6
+    0x07, // 7
+    0x7F, // 8
+    0x6F  // 9
+};
+
+/* --- INITIALIZATION (Inside MX_GPIO_Init) --- */
+// PB0-PB5, PB8: 7-Segment display outputs
+GPIO_InitTypeDef GPIO_InitStruct = {0};
+GPIO_InitStruct.Pin   = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3
+                      | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_8;
+GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+GPIO_InitStruct.Pull  = GPIO_NOPULL;
+GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+/* --- HELPER FUNCTION --- */
+void Display_SevenSegment(uint8_t number)
+{
+    if (number > 9) return;
+    uint8_t pattern = segment_map[number];
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, (pattern & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET); 
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, (pattern & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET); 
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, (pattern & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET); 
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, (pattern & 0x08) ? GPIO_PIN_SET : GPIO_PIN_RESET); 
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, (pattern & 0x10) ? GPIO_PIN_SET : GPIO_PIN_RESET); 
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, (pattern & 0x20) ? GPIO_PIN_SET : GPIO_PIN_RESET); 
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, (pattern & 0x40) ? GPIO_PIN_SET : GPIO_PIN_RESET); 
+}
+
+/* --- MAIN LOOP LOGIC (Inside while(1)) --- */
+// Call Display_SevenSegment(1) when fan is ON
+// Call Display_SevenSegment(0) when fan is OFF
+// Call Display_SevenSegment(5) when door overrides/opens
